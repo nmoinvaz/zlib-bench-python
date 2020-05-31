@@ -8,21 +8,28 @@ import platform
 import zipfile
 from distutils.dir_util import copy_tree
 
-def rmtree(top):
+def rmfile(path, retries = 10, sleep = 0.1):
+    for i in range(retries):
+        try:
+            os.chmod(path, stat.S_IWUSR)
+            os.remove(path)
+        except WindowsError:
+            time.sleep(sleep)
+        else:
+            break
+
+
+def rmtree(path):
     """Delete folder and contents: shutil.rmtree has issues with read-only files on Windows"""
 
-    for (root, dirs, files) in os.walk(top, topdown=False):
+    for root, dirs, files in os.walk(path, topdown=False):
         for name in files:
             filename = os.path.join(root, name)
-            if(os.path.isdir(filename)):
-                os.rmdir(filename)
-            else:
-                os.unlink(filename)
-            #os.chmod(filename, stat.S_IWUSR)
-            #os.remove(filename)
+            rmfile(filename)
         for name in dirs:
             os.rmdir(os.path.join(root, name))
-    os.rmdir(top)
+    os.rmdir(path)
+
 
 def install_silesia_corpus():
     """Install popular Silesia corpus"""
@@ -155,4 +162,3 @@ if __name__ == '__main__':
     install_silesia_corpus()
     compile_cloudflare()
     compile_zlibng()
-
