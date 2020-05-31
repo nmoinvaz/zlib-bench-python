@@ -37,7 +37,7 @@ def install_silesia_corpus():
     basedir = os.getcwd()
     corpusdir = os.path.join(basedir, 'silesia')
     if os.path.isdir(corpusdir):
-        rmtree(corpusdir)
+        return
     try:
         os.mkdir(corpusdir)
     except OSError:
