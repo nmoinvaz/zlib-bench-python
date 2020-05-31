@@ -23,7 +23,7 @@ def _cmp(
     opts=' -f -k -'):
     """
     compress file 'fnm' using executable 'exe'
-    
+
     Parameters
     ----------
     exe : str
@@ -33,7 +33,7 @@ def _cmp(
     lvl : int
         compression level
     opts : str
-        command line options for executable (default, ' -f -k -')                
+        command line options for executable (default, ' -f -k -')
     """
 
     env = os.environ
@@ -53,7 +53,7 @@ def test_cmp(
     ):
     """
     compress all files in folder 'indir' using executable 'exe'
-    
+
     Parameters
     ----------
     exe : str
@@ -112,7 +112,7 @@ def test_cmp(
         bytes_per_mb = 1000000
         speed = size / bytes_per_mb / min(seconds)
         print('{}\t{}\t{:.0f}\t{:.0f}\t{:.0f}\t{:.0f}\t{:.2f}'.format(meth, lvl,
-                min(seconds) * 1000, np.mean(seconds) * 1000, 
+                min(seconds) * 1000, np.mean(seconds) * 1000,
                 max(seconds) * 1000, speed, nsize / size * 100))
         row_df = pd.DataFrame([[meth, nsize / size * 100, speed, lvl]])
         row_df.columns = ['exe', 'size %', 'speed mb/s', 'level']
@@ -138,7 +138,7 @@ def plot(results_file):
     Parameters
     ----------
     results_file : str
-        name of pickle format file to plot  
+        name of pickle format file to plot
     """
 
     #if os.name == 'posix' and 'DISPLAY' not in os.environ:
@@ -153,20 +153,20 @@ def plot(results_file):
 def validate_decompress_corpus(exe, indir, tmpdir):
     """
     time decompression of all files in folder 'indir'
-    
+
     Parameters
     ----------
     exe : dictionary
        'exe' : str, exectuable name, e.g. 'zstd'
        'uncompress': str, arguments, e.g.  ' -T0 -q -f -k -d '
-       'compress': str, arguemnt for compression, e.g. ' -T0 -q -f -k -' 
-       'max_level': int, maximum supported compression level, eg 19, 
+       'compress': str, arguemnt for compression, e.g. ' -T0 -q -f -k -'
+       'max_level': int, maximum supported compression level, eg 19,
        'ext': extension used by this compressor, e.g. '.zst'
     indir : str
-        folder with refence copies of uncompressed files 
+        folder with refence copies of uncompressed files
     tmpdir : str
-        folder with files to decompress 
-     
+        folder with files to decompress
+
     size_mb : float
         uncompressed size for all files in indir
     repeats : int
@@ -204,17 +204,17 @@ def validate_decompress_corpus(exe, indir, tmpdir):
 def decompress_corpus(exe, indir, size_mb, repeats):
     """
     time decompression of all files in folder 'indir'
-    
+
     Parameters
     ----------
     exe : dictionary
        'exe' : str, exectuable name, e.g. 'zstd'
        'uncompress': str, arguments, e.g.  ' -T0 -q -f -k -d '
-       'compress': str, arguemnt for compression, e.g. ' -T0 -q -f -k -' 
-       'max_level': int, maximum supported compression level, eg 19, 
+       'compress': str, arguemnt for compression, e.g. ' -T0 -q -f -k -'
+       'max_level': int, maximum supported compression level, eg 19,
        'ext': extension used by this compressor, e.g. '.zst'
     indir : str
-        folder with files to decompress      
+        folder with files to decompress
     size_mb : float
         uncompressed size for all files in indir
     repeats : int
@@ -243,28 +243,28 @@ def decompress_corpus(exe, indir, size_mb, repeats):
                 subprocess.call(cmd, shell=True)
         seconds[r] = time.time() - start_seconds
     speed = (size_mb) / min(seconds)
-    print('{}\t{:.0f}\t{:.0f}\t{:.0f}\t{:.2f}'.format(meth, 
-        min(seconds) * 1000, np.mean(seconds) * 1000, 
+    print('{}\t{:.0f}\t{:.0f}\t{:.0f}\t{:.2f}'.format(meth,
+        min(seconds) * 1000, np.mean(seconds) * 1000,
         max(seconds) * 1000, speed))
 
 def compress_all_levels(exe, indir, tmpdir, exts):
     """
     compress all files in folder 'indir' and copy to 'tmpdir'
-    
+
     Parameters
     ----------
     exe : dictionary
        'exe' : str, exectuable name, e.g. 'zstd'
        'uncompress': str, arguments, e.g.  ' -T0 -q -f -k -d '
-       'compress': str, arguemnt for compression, e.g. ' -T0 -q -f -k -' 
-       'max_level': int, maximum supported compression level, eg 19, 
+       'compress': str, arguemnt for compression, e.g. ' -T0 -q -f -k -'
+       'max_level': int, maximum supported compression level, eg 19,
        'ext': extension used by this compressor, e.g. '.zst'
     indir : str
-        folder with files to compress      
+        folder with files to compress
     tmpdir : str
-        temporary folder for storing files compress/decompress      
+        temporary folder for storing files compress/decompress
     tmpdir : list of str
-        all possible comrpession extensions ['.zst', '.gz']     
+        all possible comrpession extensions ['.zst', '.gz']
 
     """
 
@@ -301,25 +301,25 @@ def compress_all_levels(exe, indir, tmpdir, exts):
 def test_decomp(exes, indir, exts, repeats):
     """
     test decompression speed for all files in folder 'indir' using each exes
-    
+
     Parameters
     ----------
     exes : dictionary where each entry has following properties
        'exe' : str, exectuable name, e.g. 'zstd'
        'uncompress': str, arguments, e.g.  ' -T0 -q -f -k -d '
-       'compress': str, arguemnt for compression, e.g. ' -T0 -q -f -k -' 
-       'max_level': int, maximum supported compression level, eg 19, 
+       'compress': str, arguemnt for compression, e.g. ' -T0 -q -f -k -'
+       'max_level': int, maximum supported compression level, eg 19,
        'ext': extension used by this compressor, e.g. '.zst'
     indir : str
-        folder with files to compress/decompress      
+        folder with files to compress/decompress
     tmpdir : str
-        temporary folder for storing files compress/decompress      
+        temporary folder for storing files compress/decompress
     tmpdir : list of str
-        all possible comrpession extensions ['.zst', '.gz']     
+        all possible comrpession extensions ['.zst', '.gz']
     repeats : int
         number of times each item is decompressed
         performance estimate based on fastest run
-        
+
     """
 
     tmpdir = './temp'
@@ -337,7 +337,7 @@ def test_decomp(exes, indir, exts, repeats):
         decompress_corpus(exes[i], tmpdir, size_mb, repeats)
     for  i in range(len(exes)) :
         validate_decompress_corpus(exes[i], indir, tmpdir)
-    
+
 if __name__ == '__main__':
     """Compare speed and size for different compression tools
 
@@ -346,7 +346,7 @@ if __name__ == '__main__':
     indir : str
         folder with files to compress (default './silesia')
     repeats : int
-     how many times is each file compressed (default 7)    
+     how many times is each file compressed (default 7)
     """
 
     indir = ''
