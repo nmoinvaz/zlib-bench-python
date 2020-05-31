@@ -147,7 +147,7 @@ def plot(results_file):
     df = pd.read_pickle(results_file)
     sns.set()
     sns_plot = sns.lineplot(x='speed mb/s', y='size %', hue='exe', data=df)
-    #plt.show()
+    plt.show()
     plt.savefig(results_file.replace('.pkl', '.png'))
 
 def validate_decompress_corpus(exe, indir, tmpdir):
