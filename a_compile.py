@@ -41,7 +41,7 @@ def install_silesia_corpus():
     try:
         os.mkdir(corpusdir)
     except OSError:
-        print('Creation of the directory {} failed' .format(corpusdir) )
+        print('Creation of the directory {} failed' .format(corpusdir))
     cmd = 'git clone https://github.com/MiloszKrajewski/SilesiaCorpus silesia'
     print("Installing "+corpusdir);
     subprocess.call(cmd, shell=True)
@@ -62,95 +62,77 @@ def install_silesia_corpus():
     os.chdir(basedir)
 
 
-def compile_zlibng():
+def compile_minigzip(name, repository_url, cmake_args):
     """compile variants of gz"""
 
-    methods = ['gcc', 'clang']
-    ccompiler = ['gcc', 'clang']
-    cppcompiler = ['g++', 'clang++']
+    methods = ['intel', 'clang', 'gcc', 'msvc']
+    method_cmake_args = [
+        '-G "NMake Makefiles" -DCMAKE_C_COMPILER=icl',
+        '-T ClangCl',
+        '-G "MinGW Makefiles"',
+        ''
+    ]
+
     if platform.system() == 'Darwin':
         print('Warning MacOS alias gcc->clang!')
+
+    rebuild = False
+    repository_tag = None
+
     basedir = os.getcwd()
     exedir = os.path.join(basedir, 'exe')
-    #if os.path.isdir(exedir):
-    #    rmtree(exedir)
-    try:
+    if rebuild:
+        if os.path.isdir(exedir):
+            rmtree(exedir)
+    if not os.path.exists(exedir):
         os.mkdir(exedir)
-    except OSError:
-        print ("Creation of the directory {} failed" .format(exedir) )
+
     gzdir = os.path.join(basedir, 'gz')
-    if os.path.isdir(gzdir):
-        rmtree(gzdir)
-    cmd = 'git clone https://github.com/zlib-ng/zlib-ng.git '+gzdir
-    subprocess.call(cmd, shell=True)
-    gzdir = os.path.join(gzdir,'build')
+    if rebuild:
+        if os.path.isdir(gzdir):
+            rmtree(gzdir)
+        cmd = 'git clone {0} {1}'.format(repository_url, gzdir)
+        subprocess.call(cmd, shell=True)
+        if repository_tag:
+            cmd = 'git checkout {0}'.format(repository_tag)
+            subprocess.call(cmd, shell=True)
+
+    gzdir = os.path.join(gzdir, 'build')
     gzexe = os.path.join(gzdir, 'minigzip')
     ext = ''
     if platform.system() == 'Windows':
         ext = '.exe'
     gzexe = gzexe + ext
     for m in range(len(methods)):
+
         method = methods[m]
         os.chdir(basedir)
-        if os.path.isdir(gzdir):
-            rmtree(gzdir)
-        os.mkdir(gzdir)
+
+        if rebuild:
+            if os.path.isdir(gzdir):
+                rmtree(gzdir)
+            os.mkdir(gzdir)
+        else:
+            cache_file = os.path.join(gzdir, "CMakeCache.txt")
+            if os.path.exists(cache_file):
+                rmfile(cache_file)
+
         os.chdir(gzdir)
-        cmd = 'cmake -DCMAKE_C_COMPILER='+ccompiler[m]+' -DCMAKE_CXX_COMPILER='+cppcompiler[m]+' -DZLIB_COMPAT=ON  ..'
+
+        cmd = 'cmake .. {0} {1}'.format(method_cmake_args[m], cmake_args)
+        print(cmd)
         subprocess.call(cmd, shell=True)
-        #cmd = 'make'
-        #if platform.system() == 'Windows':
+
         cmd = 'cmake --build . --config Release'
         subprocess.call(cmd, shell=True)
-        outnm = os.path.join(exedir, 'minigz' + method + ext)
-        print (gzexe + '->' + outnm)
+        outnm = os.path.join(exedir, 'minigz-{0}-{1}{2}'.format(name, method, ext))
+
+        gzexe = os.path.join(gzdir, 'Release', 'minigzip') + ext
+        if not os.path.exists(gzexe):
+            gzexe = os.path.join(gzdir, 'minigzip') + ext
+        print(gzexe + '->' + outnm)
         shutil.move(gzexe, outnm)
-        st = os.stat(outnm)
-        os.chmod(outnm, st.st_mode | stat.S_IEXEC)
-        os.chdir(basedir)
 
-
-def compile_cloudflare():
-    """compile variants of gz"""
-
-    methods = ['gccCF', 'clangCF']
-    ccompiler = ['gcc', 'clang']
-    cppcompiler = ['g++', 'clang++']
-    if platform.system() == 'Darwin':
-        print('Warning MacOS alias gcc->clang!')
-    basedir = os.getcwd()
-    exedir = os.path.join(basedir, 'exe')
-    #if os.path.isdir(exedir):
-    #    rmtree(exedir)
-    try:
-        os.mkdir(exedir)
-    except OSError:
-        print ("Creation of the directory {} failed" .format(exedir) )
-    gzdir = os.path.join(basedir, 'gz')
-    if os.path.isdir(gzdir):
-        rmtree(gzdir)
-    cmd = 'git clone https://github.com/rordenlab/zlib.git '+gzdir
-    subprocess.call(cmd, shell=True)
-    gzdir = os.path.join(gzdir,'build')
-    gzexe = os.path.join(gzdir, 'minigzip')
-    ext = ''
-    if platform.system() == 'Windows':
-        ext = '.exe'
-    gzexe = gzexe + ext
-    for m in range(len(methods)):
-        method = methods[m]
-        os.chdir(basedir)
-        if os.path.isdir(gzdir):
-            rmtree(gzdir)
-        os.mkdir(gzdir)
-        os.chdir(gzdir)
-        cmd = 'cmake -DCMAKE_C_COMPILER='+ccompiler[m]+' -DCMAKE_CXX_COMPILER='+cppcompiler[m]+' -DBUILD_EXAMPLES=ON -DUSE_STATIC_RUNTIME=ON  ..'
-        subprocess.call(cmd, shell=True)
-        cmd = 'cmake --build .'
-        subprocess.call(cmd, shell=True)
-        outnm = os.path.join(exedir, 'minigz' + method + ext)
-        print (gzexe + '->' + outnm)
-        shutil.move(gzexe, outnm)
         st = os.stat(outnm)
         os.chmod(outnm, st.st_mode | stat.S_IEXEC)
         os.chdir(basedir)
@@ -160,5 +142,5 @@ if __name__ == '__main__':
     """compile variants of zlib and sample compression corpus"""
 
     install_silesia_corpus()
-    compile_cloudflare()
-    compile_zlibng()
+    compile_minigzip('ng', 'https://github.com/zlib-ng/zlib-ng.git', '-DZLIB_ENABLE_TESTS=ON -DZLIB_COMPAT=ON')
+    #compile_minigzip('cf', 'https://github.com/rordenlab/zlib.git', ' -DBUILD_EXAMPLES=ON -DUSE_STATIC_RUNTIME=ON')
